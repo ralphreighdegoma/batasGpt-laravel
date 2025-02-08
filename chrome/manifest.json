@@ -1,0 +1,14 @@
+{
+    "manifest_version": 3,
+    "name": "Form Filler for Laravel Filament 3",
+    "version": "1.0",
+    "description": "Automatically fill forms with random values for Laravel Filament 3.",
+    "permissions": ["activeTab", "scripting"],
+    "action": {
+        "default_popup": "popup.html"
+    },
+    "content_scripts": [{
+        "matches": ["<all_urls>"],
+        "js": ["content.js"]
+    }]
+}
