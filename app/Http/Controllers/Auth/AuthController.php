@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 namespace App\Http\Controllers\Auth;
 
@@ -26,7 +26,9 @@ class AuthController extends Controller
             ]);
 
             $token = $user->createToken(
-                'token-name', ['*'], now()->addWeek()
+                'token-name',
+                ['*'],
+                now()->addWeek()
             )->plainTextToken;
 
 
@@ -39,7 +41,6 @@ class AuthController extends Controller
                     'token' => $token
                 ]
             ], 201);
-
         } catch (ValidationException $e) {
             return response()->json([
                 'status' => false,
@@ -84,5 +85,64 @@ class AuthController extends Controller
         $request->user()->currentAccessToken()->delete();
 
         return response()->json(['message' => 'Successfully logged out']);
+    }
+
+    public function profile(Request $request)
+    {
+        return response()->json($request->user());
+    }
+
+    public function uploadAvatar(Request $request)
+    {
+        $request->validate([
+            'avatar' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+        ]);
+
+        $user = $request->user();
+        $avatar = $request->file('avatar');
+
+        $path = $avatar->store('avatars', 'public');
+        //add storage url to path
+        $path = asset('storage/' . $path);
+        $user->avatar = $path;
+        $user->save();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Avatar uploaded successfully',
+            'data' => [
+                'avatar' => $path
+            ]
+        ], 200);
+    }
+
+    public function updateProfile(Request $request)
+    {
+        try {
+            $request->validate([
+                'name' => 'required|string|max:255',
+                'title' => 'required|string|max:255',
+                'bio' => 'required|string|max:255',
+            ]);
+
+
+            $user = $request->user();
+            $user->name = $request->name;
+            $user->title = $request->title;
+            $user->bio = $request->bio;
+            $user->save();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Profile updated successfully',
+                'data' => $user
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Profile update failed',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 }

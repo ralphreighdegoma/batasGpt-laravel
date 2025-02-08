@@ -24,6 +24,8 @@ class User extends Authenticatable implements FilamentUser
      */
     protected $fillable = [
         'name',
+        'title',
+        'bio',
         'email',
         'password',
         'avatar_url',
@@ -51,6 +53,12 @@ class User extends Authenticatable implements FilamentUser
     public function canAccessPanel(Panel $panel): bool
     {
         return true;
+    }
+
+    //avatars url add storage
+    public function getAvatarUrlAttribute()
+    {
+        return asset('storage/' . $this->avatar);
     }
 
     /**
