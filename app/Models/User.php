@@ -108,4 +108,9 @@ class User extends Authenticatable implements FilamentUser
         );
     }
 
+    public function following()
+    {
+        return $this->belongsToMany(User::class, 'connections', 'following_id');
+    }
+
 }
