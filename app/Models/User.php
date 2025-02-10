@@ -110,7 +110,7 @@ class User extends Authenticatable implements FilamentUser
 
     public function following()
     {
-        return $this->belongsToMany(User::class, 'connections', 'following_id');
+        return $this->belongsToMany(User::class, 'connections', 'following_id')->whereNotNull('email_verified_at');
     }
-
+    
 }

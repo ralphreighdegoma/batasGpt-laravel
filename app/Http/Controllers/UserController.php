@@ -11,7 +11,9 @@ class UserController extends Controller
     public function search(Request $request)
     {
         $query = $request->input('q');
-        $users = User::where('name', 'like', '%' . $query . '%')->get();
+        $users = User::where('name', 'like', '%' . $query . '%')->whereNotNull('email_verified_at')
+            ->where('id', '!=', $request->user()->id)
+            ->get();
         return response()->json($users);
     }
 

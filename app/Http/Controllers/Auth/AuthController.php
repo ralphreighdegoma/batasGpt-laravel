@@ -32,6 +32,8 @@ class AuthController extends Controller
             )->plainTextToken;
 
 
+            //send email verification
+            $user->sendEmailVerificationNotification();
 
             return response()->json([
                 'status' => true,
@@ -63,6 +65,15 @@ class AuthController extends Controller
             'email' => 'required|email',
             'password' => 'required',
         ]);
+
+        //check if user is verfied
+        $user = User::where('email', $validated['email'])->first();
+        if (!$user || !$user->email_verified_at) {
+            return response()->json([
+                'status' => false,
+                'message' => 'User not verified, check your email for verification.',
+            ], 401);
+        }
 
         $user = User::where('email', $validated['email'])->first();
 
