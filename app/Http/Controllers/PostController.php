@@ -23,7 +23,7 @@ class PostController extends Controller
 
     public function getPosts()
     {
-        $posts = Post::orderBy('created_at', 'desc')->get();
+        $posts = Post::where('user_id', auth()->id())->orderBy('created_at', 'desc')->get();
         return response()->json($posts);
     }
 

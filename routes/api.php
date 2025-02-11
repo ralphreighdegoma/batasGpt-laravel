@@ -7,6 +7,10 @@ use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\ConnectionController;
 use App\Http\Controllers\UserController;
+use App\Models\User;
+use App\Http\Controllers\CommentController;
+
+
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
@@ -43,6 +47,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/following', [ConnectionController::class, 'getFollowing']);
     Route::post('/accept-follow-request', [ConnectionController::class, 'acceptFollowRequest']);
     Route::post('/reject-follow-request', [ConnectionController::class, 'rejectFollowRequest']);
+
+
+    //coments
+    Route::post('/comments', [CommentController::class, 'createComment']);
+    Route::get('/comments/{postId}', [CommentController::class, 'getComments']);
 });
 
 Route::post('/tokens/create', function (Request $request) {
@@ -51,4 +60,12 @@ Route::post('/tokens/create', function (Request $request) {
 });
 
 
-
+Route::get('/email/code-verify/{code}', function ($code) {
+$user = User::where('verification_code', $code)->first();
+    if (!$user) {
+        return redirect(env('FRONTEND_URL') . '/verify?error=invalid_code');
+    }
+    $user->email_verified_at = now();
+    $user->save();
+    return response()->json(['message' => 'Email verified successfully']);
+});

@@ -10,6 +10,8 @@ use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Laravel\Sanctum\HasApiTokens;
+use App\Notifications\CustomVerificationEmail;
+
 
 class User extends Authenticatable implements FilamentUser
 {
@@ -29,7 +31,9 @@ class User extends Authenticatable implements FilamentUser
         'email',
         'password',
         'avatar_url',
-        'role_id'
+        'role_id',
+        'address',
+        'aboutMe'
     ];
 
     /**
@@ -59,6 +63,13 @@ class User extends Authenticatable implements FilamentUser
     public function getAvatarUrlAttribute()
     {
         return asset('storage/' . $this->avatar);
+    }
+    
+
+    public function sendVerificationEmail()
+    {
+        //custom verification email
+        $this->notify(new CustomVerificationEmail($this));
     }
 
     /**
@@ -112,5 +123,5 @@ class User extends Authenticatable implements FilamentUser
     {
         return $this->belongsToMany(User::class, 'connections', 'following_id')->whereNotNull('email_verified_at');
     }
-    
+
 }

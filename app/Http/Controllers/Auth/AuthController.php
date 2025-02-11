@@ -26,14 +26,14 @@ class AuthController extends Controller
             ]);
 
             $token = $user->createToken(
-                'token-name',
+                $user->email,
                 ['*'],
                 now()->addWeek()
             )->plainTextToken;
 
 
             //send email verification
-            $user->sendEmailVerificationNotification();
+            $user->sendVerificationEmail();
 
             return response()->json([
                 'status' => true,
@@ -66,15 +66,6 @@ class AuthController extends Controller
             'password' => 'required',
         ]);
 
-        //check if user is verfied
-        $user = User::where('email', $validated['email'])->first();
-        if (!$user || !$user->email_verified_at) {
-            return response()->json([
-                'status' => false,
-                'message' => 'User not verified, check your email for verification.',
-            ], 401);
-        }
-
         $user = User::where('email', $validated['email'])->first();
 
         if (! $user || ! Hash::check($validated['password'], $user->password)) {
@@ -84,7 +75,7 @@ class AuthController extends Controller
             ], 401);
         }
 
-        $token = $user->createToken('auth_token')->plainTextToken;
+        $token = $user->createToken($user->email, ['*'], now()->addWeek())->plainTextToken;
 
         return response()->json([
             'user' => $user,
@@ -101,7 +92,11 @@ class AuthController extends Controller
 
     public function profile(Request $request)
     {
-        return response()->json($request->user());
+        $user = $request->user();
+
+        return response()->json([
+            'user' => $user
+        ]);
     }
 
     public function uploadAvatar(Request $request)
@@ -112,9 +107,7 @@ class AuthController extends Controller
 
         $user = $request->user();
         $avatar = $request->file('avatar');
-
         $path = $avatar->store('avatars', 'public');
-        //add storage url to path
         $path = asset('storage/' . $path);
         $user->avatar = $path;
         $user->save();
@@ -135,6 +128,8 @@ class AuthController extends Controller
                 'name' => 'required|string|max:255',
                 'title' => 'required|string|max:255',
                 'bio' => 'required|string|max:255',
+                'address' => 'required|string|max:255',
+                'aboutMe' => 'required|string|max:255',
             ]);
 
 
@@ -142,6 +137,8 @@ class AuthController extends Controller
             $user->name = $request->name;
             $user->title = $request->title;
             $user->bio = $request->bio;
+            $user->address = $request->address;
+            $user->aboutMe = $request->aboutMe;
             $user->save();
 
             return response()->json([
