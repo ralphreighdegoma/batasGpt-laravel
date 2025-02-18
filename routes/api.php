@@ -2,21 +2,18 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\JurisprudenceController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\ConnectionController;
 use App\Http\Controllers\UserController;
 use App\Models\User;
 use App\Http\Controllers\CommentController;
-
+use App\Http\Controllers\TagsController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
-
-Route::get('/search', [JurisprudenceController::class, 'search']);
 
 Route::prefix('auth')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
@@ -28,11 +25,25 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/profile', [AuthController::class, 'profile']);
     Route::post('/post', [PostController::class, 'createPost']);
     Route::post('/upload-avatar', [AuthController::class, 'uploadAvatar']);
-    Route::put('/profile', [AuthController::class, 'updateProfile']);
-    Route::get('/posts', [PostController::class, 'getPosts']);
 
+
+    Route::put('/profile', [AuthController::class, 'updateProfile']);
+    //get profile by hash id
+    Route::get('/profile/{hashId}', [AuthController::class, 'getProfileByHashId']);
+
+
+    Route::get('/posts', [PostController::class, 'getPosts']);
+    Route::post('/posts/{postId}/like', [PostController::class, 'likePost']);
+    Route::get('/posts/{postId}/likes', [PostController::class, 'getLikes']);
+    
+    //tags
+    Route::get('/tags', [TagsController::class, 'index']);
+    Route::get('/tags/search', [TagsController::class, 'search']);
     //api for news feed
     Route::get('/news-feed', [PostController::class, 'getNewsFeed']);
+
+    //api for search news feed
+    Route::get('/news-feed/search', [PostController::class, 'searchNewsFeed']);
 
     //api for search users
     Route::get('/users/search', [UserController::class, 'search']);
@@ -52,6 +63,13 @@ Route::middleware('auth:sanctum')->group(function () {
     //coments
     Route::post('/comments', [CommentController::class, 'createComment']);
     Route::get('/comments/{postId}', [CommentController::class, 'getComments']);
+
+    //getting posts from user by hash id
+    Route::get('/user/{hashId}/posts', [PostController::class, 'getPostsByHashId']);
+
+
+    //og image grabber
+    Route::get('/og-image', [PostController::class, 'getOgImage']);
 });
 
 Route::post('/tokens/create', function (Request $request) {

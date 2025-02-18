@@ -15,7 +15,7 @@
         "jiten14/jitone-ai": "^0.1.5",
         "joaopaulolndev/filament-edit-profile": "^1.0",
         "lara-zeus/boredom": "^1.0",
-        "laravel/framework": "^11.41",
+        "laravel/framework": "^11.42",
         "laravel/passport": "^12.4",
         "laravel/reverb": "^1.0",
         "laravel/sanctum": "^4.0",

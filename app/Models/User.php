@@ -33,7 +33,8 @@ class User extends Authenticatable implements FilamentUser
         'avatar_url',
         'role_id',
         'address',
-        'aboutMe'
+        'aboutMe',
+        'hashId'
     ];
 
     /**
@@ -122,6 +123,11 @@ class User extends Authenticatable implements FilamentUser
     public function following()
     {
         return $this->belongsToMany(User::class, 'connections', 'following_id')->whereNotNull('email_verified_at');
+    }
+
+    public function postCount()
+    {
+        return $this->hasMany(Post::class)->count();
     }
 
 }

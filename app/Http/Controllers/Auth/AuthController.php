@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
@@ -20,6 +21,7 @@ class AuthController extends Controller
             ]);
 
             $user = User::create([
+                'hashId' => $this->generateHashId(),
                 'name' => $validated['name'],
                 'email' => $validated['email'],
                 'password' => Hash::make($validated['password']),
@@ -58,6 +60,16 @@ class AuthController extends Controller
         }
     }
 
+    public function generateHashId()
+    {
+        //generate hash id but check if it is unique
+        $hashId = Str::random(10);
+        while (User::where('hashId', $hashId)->exists()) {
+            $hashId = Str::random(10);
+        }
+        return $hashId;
+    }
+
 
     public function login(Request $request)
     {
@@ -65,6 +77,12 @@ class AuthController extends Controller
             'email' => 'required|email',
             'password' => 'required',
         ]);
+        //check if user has hash id
+        $user = User::where('email', $validated['email'])->first();
+        if (!$user->hashId) {
+            $user->hashId = $this->generateHashId();
+            $user->save();
+        }
 
         $user = User::where('email', $validated['email'])->first();
 
@@ -76,6 +94,8 @@ class AuthController extends Controller
         }
 
         $token = $user->createToken($user->email, ['*'], now()->addWeek())->plainTextToken;
+
+        $user->postCount = $user->postCount();
 
         return response()->json([
             'user' => $user,
@@ -140,6 +160,7 @@ class AuthController extends Controller
             $user->address = $request->address;
             $user->aboutMe = $request->aboutMe;
             $user->save();
+            $user->postCount = $user->postCount();
 
             return response()->json([
                 'status' => true,
@@ -153,5 +174,19 @@ class AuthController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    public function getProfileByHashId(Request $request, $hashId)
+    {
+        $user = User::where('hashId', $hashId)->first();
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'User not found'
+            ], 404);
+        }
+        return response()->json([
+            'user' => $user
+        ], 200);
     }
 }
